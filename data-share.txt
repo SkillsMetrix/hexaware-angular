@@ -6,16 +6,21 @@
     <div class="card-body">
       <form (ngSubmit)="addUser(fdata)" #fdata=ngForm>
          UserName: <input type="text" name="uname" ngModel required #name=ngModel/>
-         <div>
+         <div *ngIf="name.invalid &&(name.dirty || name.touched)">
             <div *ngIf="name.errors?.['required']"><h6>Field can not be blank</h6></div>
          </div>
          Email: <input type="email" name="email" ngModel required #email=ngModel email/> 
-            <div *ngIf="email.invalid">
+            <div *ngIf="email.invalid &&(email.dirty || email.touched)">
             <div *ngIf="email.errors?.['required']"><h6>Field can not be blank</h6></div>
             <div *ngIf="email.errors?.['email']"><h6>Email must be formatted</h6></div>
          </div>
-         Password:<input type="password" name="pass" ngModel/>&nbsp;
-        <button class="btn btn-primary">Register</button>
+         Password:<input type="password" name="pass" ngModel required minlength="6" #pass=ngModel/>&nbsp;
+           <div *ngIf="pass.invalid &&(pass.dirty || pass.touched)">
+            <div *ngIf="pass.errors?.['required']"><h6>Field can not be blank</h6></div>
+            <div *ngIf="pass.errors?.['minlength']"><h6>Password must be 6 char long</h6></div>
+         </div>
+
+        <button [disabled]="fdata.invalid" class="btn btn-primary">Register</button>
       </form>
     </div>
   </div>
