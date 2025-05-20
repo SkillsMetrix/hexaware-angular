@@ -1,94 +1,22 @@
-import { Component } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { UserService } from '../../shared/user.service';
-
-@Component({
-  selector: 'app-template',
-  templateUrl: './template.component.html',
-  styleUrl: './template.component.css'
-})
-export class TemplateComponent {
-
-  state=['MH','KAR','TN','TS']
-  addUser(nf:NgForm){
-    this.us.addUserTODB(nf.value)
-    
-  }
-  constructor(private us:UserService){}
-
-}
----
-
-
 <div class="container">
   <div class="card">
     <div class="card-header">
       <p>User Registration Form</p>
     </div>
     <div class="card-body">
-      <form (ngSubmit)="addUser(fdata)" #fdata=ngForm>
-         UserName: <input type="text" name="uname" ngModel required #name=ngModel/>
-         <div *ngIf="name.invalid &&(name.dirty || name.touched)">
-            <div *ngIf="name.errors?.['required']"><h6>Field can not be blank</h6></div>
-         </div>
-         Email: <input type="email" name="email" ngModel required #email=ngModel email/> 
-            <div *ngIf="email.invalid &&(email.dirty || email.touched)">
-            <div *ngIf="email.errors?.['required']"><h6>Field can not be blank</h6></div>
-            <div *ngIf="email.errors?.['email']"><h6>Email must be formatted</h6></div>
-         </div>
-         Password:<input type="password" name="pass" ngModel required minlength="6" #pass=ngModel/>&nbsp;
-           <div *ngIf="pass.invalid &&(pass.dirty || pass.touched)">
-            <div *ngIf="pass.errors?.['required']"><h6>Field can not be blank</h6></div>
-            <div *ngIf="pass.errors?.['minlength']"><h6>Password must be 6 char long</h6></div>
-         </div>
-         State: <select name="state" ngModel>
-          <option value="">--select state--</option>
-          <option *ngFor="let data of state" [value]="data">{{data}}</option>
-         </select>
+      <form (ngSubmit)="addUser()">
+        UserName: <input type="text" />
 
-        <button [disabled]="fdata.invalid" class="btn btn-primary">Register</button>
+        Email: <input type="email" />
+
+        Password:<input type="password" />&nbsp; State:
+        <select>
+          <option value="">--select state--</option>
+          <option *ngFor="let data of state" [value]="data">{{ data }}</option>
+        </select>
+
+        <button class="btn btn-primary">Register</button>
       </form>
     </div>
   </div>
 </div>
-
-
----------------
-
-import { Injectable } from '@angular/core';
-import { User } from './models/User.model';
-import { UserForm } from './models/UserForm.model';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class UserService {
-
-  userData:UserForm[]=[]
-
-  loadUsers(): User[] {
-    return [
-      { id: 101, name: 'sumit', email: 'sumit@mail.com' },
-      { id: 102, name: 'suman', email: 'suman@mail.com' }
-    ]
-  }
-
-  constructor() { }
-
-  addUserTODB(data:UserForm){
-    this.userData.push(data)
-    console.log(this.userData);
-    
-   
-  }
-}
-----
-
-
-export interface UserForm{
-    
-    uname:string
-    email:string
-    password:string
-    state:string
-}
