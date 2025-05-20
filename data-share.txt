@@ -4,9 +4,17 @@
       <p>User Registration Form</p>
     </div>
     <div class="card-body">
-      <form action="">
-        UserName: <input type="text" /> Email: <input type="email" /> Password:
-        <input type="password" />&nbsp;
+      <form (ngSubmit)="addUser(fdata)" #fdata=ngForm>
+         UserName: <input type="text" name="uname" ngModel required #name=ngModel/>
+         <div>
+            <div *ngIf="name.errors?.['required']"><h6>Field can not be blank</h6></div>
+         </div>
+         Email: <input type="email" name="email" ngModel required #email=ngModel email/> 
+            <div *ngIf="email.invalid">
+            <div *ngIf="email.errors?.['required']"><h6>Field can not be blank</h6></div>
+            <div *ngIf="email.errors?.['email']"><h6>Email must be formatted</h6></div>
+         </div>
+         Password:<input type="password" name="pass" ngModel/>&nbsp;
         <button class="btn btn-primary">Register</button>
       </form>
     </div>
