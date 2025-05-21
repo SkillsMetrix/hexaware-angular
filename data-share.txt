@@ -4,13 +4,24 @@
       <p>User Registration Form</p>
     </div>
     <div class="card-body">
-      <form (ngSubmit)="addUser()">
-        UserName: <input type="text" />
+      <form (ngSubmit)="addUser()" [formGroup]="regForm">
+        UserName: <input type="text"  formControlName="uname"/>
 
-        Email: <input type="email" />
 
-        Password:<input type="password" />&nbsp; State:
-        <select>
+        <div *ngIf="regForm.get('uname')?.invalid && (regForm.get('uname')?.touched || regForm.get('uname')?.dirty )">
+          <div *ngIf="regForm.get('uname')?.errors?.['required']"> Name cant be empty</div>
+        </div>
+
+        
+
+        Email: <input type="email"  formControlName="email"/>
+
+         <div *ngIf="regForm.get('email')?.invalid && (regForm.get('email')?.touched || regForm.get('email')?.dirty )">
+          <div *ngIf="regForm.get('email')?.errors?.['required']"> Email cant be empty</div>
+        </div>
+
+        Password:<input type="password"  formControlName="pass"/>&nbsp; State:
+        <select  formControlName="state">
           <option value="">--select state--</option>
           <option *ngFor="let data of state" [value]="data">{{ data }}</option>
         </select>
