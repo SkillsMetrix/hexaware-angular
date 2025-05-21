@@ -1,3 +1,35 @@
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-reactive',
+  templateUrl: './reactive.component.html',
+  styleUrl: './reactive.component.css'
+})
+export class ReactiveComponent {
+
+  regForm: FormGroup
+  constructor(private fb: FormBuilder) {
+    this.regForm = this.fb.group({
+      uname: ['',[Validators.required]],
+      email: ['',[Validators.required,Validators.email]],
+      pass: [''],
+      state: ['']
+    })
+
+  }
+ 
+  state = ['MH', 'KAR', 'TN', 'TS']
+
+  addUser() {
+    console.log('user added',this.regForm.value);
+
+  }
+
+}
+----
+
+
 <div class="container">
   <div class="card">
     <div class="card-header">
@@ -17,8 +49,11 @@
         Email: <input type="email"  formControlName="email"/>
 
          <div *ngIf="regForm.get('email')?.invalid && (regForm.get('email')?.touched || regForm.get('email')?.dirty )">
+
           <div *ngIf="regForm.get('email')?.errors?.['required']"> Email cant be empty</div>
-        </div>
+     
+          <div *ngIf="regForm.get('email')?.errors?.['email']"> Email must be formatted</div>
+           </div>
 
         Password:<input type="password"  formControlName="pass"/>&nbsp; State:
         <select  formControlName="state">
