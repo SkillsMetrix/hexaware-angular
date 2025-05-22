@@ -1,3 +1,34 @@
+import { Injectable } from '@angular/core';
+import { UserForm } from './models/UserForm.model';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class UserService {
+ 
+
+  constructor(private http: HttpClient) {}
+
+  addUserTODB(data: UserForm) {
+    this.http.post('http://localhost:3000/users', data).subscribe((res) => {
+      console.log(res);
+    });
+  }
+
+  loadUsersFromDB():Observable<any>{
+   return this.http.get('http://localhost:3000/users');
+   
+}
+deleteUserFromDB(id:string):Observable<any>{
+ return this.http.delete(`http://localhost:3000/users/${id}`);
+}
+}
+
+--------------------------
+
+
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../shared/user.service';
