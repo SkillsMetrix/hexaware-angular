@@ -1,3 +1,26 @@
+import { Component } from '@angular/core';
+import { CartService } from '../../shared/services/cart.service';
+
+@Component({
+  selector: 'app-cart',
+  templateUrl: './cart.component.html',
+  styleUrl: './cart.component.css'
+})
+export class CartComponent {
+  public products: any = []
+  public grandTotal !: number
+  constructor(private cs: CartService) {
+    this.cs.getProducts()
+      .subscribe(res => {
+        this.products = res
+        this.grandTotal = this.cs.getTotalPrice()
+      })
+  }
+
+}
+----
+
+
 <ng-container *ngIf="true">
     <div class="card-table">
         <div class="cart-product">
@@ -15,14 +38,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                    <tr *ngFor="let item of products; let i=index">
+                        <td>{{i+1}}</td>
+                        <td>{{item.title}}</td>
+                        <td>
+                            <img style="width: 120px;" src="{{item.image}}">
+                        </td>
+                        <td>{{item.description}}</td>
+                        <td>{{item.price}}</td>
+                        <td>{{item.quantity}}</td>
+                        <td>{{item.total}}</td>
                         <td>
                             <button class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
                         </td>
@@ -49,17 +74,3 @@
         </div>
     </div>
 </ng-container>
-
-
-
-.card{
-    height: 60vh;
-    margin: 25px;
-    padding: 25px;
-}
-.center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    text-align: center;
-}
