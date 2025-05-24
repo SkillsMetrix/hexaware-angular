@@ -1,166 +1,84 @@
 import { Injectable } from '@angular/core';
 import { UserForm } from './models/UserForm.model';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { UserGuardService } from './user-guard.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
  
-
-  constructor(private http: HttpClient) {}
+private baseURL='http://localhost:3000/users'
+  constructor(private http: HttpClient,private ug:UserGuardService,private route:Router) {}
 
   addUserTODB(data: UserForm) {
-    this.http.post('http://localhost:3000/users', data).subscribe((res) => {
+    this.http.post(this.baseURL, data).subscribe((res) => {
       console.log(res);
     });
   }
 
   loadUsersFromDB():Observable<any>{
-   return this.http.get('http://localhost:3000/users');
+   return this.http.get(this.baseURL);
    
 }
 deleteUserFromDB(id:string):Observable<any>{
- return this.http.delete(`http://localhost:3000/users/${id}`);
+ return this.http.delete(`${this.baseURL}/${id}`);
+}
+
+logout(){
+  this.ug.isAllowed=false
+this.route.navigateByUrl('/login')
+}
+
+loginUser(data:any):Observable<any>{
+const url=`${this.baseURL}?uname=${data.uname}&pass=${data.pass}`
+return this.http.get<any[]>(url).pipe(
+  map(users =>users.length ? users[0]:null)
+)
 }
 }
 
---------------------------
+
+------------
 
 
 import { Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../shared/user.service';
+import { Router } from '@angular/router';
+import { UserGuardService } from '../../shared/user-guard.service';
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css'
 })
-export class RegisterComponent {
+export class LoginComponent {
 
- regForm: FormGroup;
-  constructor(private fb: FormBuilder,private us:UserService) {
+  regForm: FormGroup;
+  constructor(private fb: FormBuilder, private us: UserService,private ug:UserGuardService,
+    private route:Router
+  ) {
     this.regForm = this.fb.group({
       uname: ['', [Validators.required]],
-      email: ['', [Validators.required, this.emailDomainValidator]],
       pass: ['', [Validators.required, Validators.minLength(6)]],
-      state: [''],
-    });
-    this.loadUsers()
-  }
 
-  state = ['MH', 'KAR', 'TN', 'TS'];
+    });}
 
-  addUser() {
-   
-    this.us.addUserTODB(this.regForm.value)
-    alert('user added')
-    this.loadUsers()
-  }
-  emailDomainValidator(control:FormControl){
-    let email= control.value
-    if(email && email.indexOf('@') != -1){
-      let [prefix,domain]=email.split('@')
-      
-        if(domain !=='hexaware.com'){
-        return {
-          emailDomain:{
-            main:domain
-          }
-        }
+    login(){
+    this.us.loginUser(this.regForm.value).subscribe(user =>{
+      if(user){
+        alert('login successfull')
+        this.ug.isAllowed=true
+        this.route.navigateByUrl('/userdetails')
+
+
+      }else{
+        alert('UnAuthorized ....!')
       }
-    }
-    return null
-  }
-users:any[]=[]
-  loadUsers(){
-    this.us.loadUsersFromDB().subscribe((res)=>{
-      this.users=res
     })
-  }
-deleteUser(id:string){
-      this.us.deleteUserFromDB(id).subscribe((res)=>{
-        console.log('deleted' ,res);
-        this.loadUsers()
-        
-      })
+      
+    }
 }
-}
-
-----
-<div class="container">
-  <div class="card">
-    <div class="card-header">
-      <p>User Registration Form</p>
-    </div>
-    <div class="card-body">
-      <form (ngSubmit)="addUser()" [formGroup]="regForm">
-        UserName:
-        <input type="text" placeholder="Enter Name" formControlName="uname" />
-
-        <div
-          *ngIf="
-            regForm.get('uname')?.invalid &&
-            (regForm.get('uname')?.touched || regForm.get('uname')?.dirty)
-          "
-        >
-          <div *ngIf="regForm.get('uname')?.errors?.['required']">
-            Name cant be empty
-          </div>
-        </div>
-
-        Email: <input type="email" formControlName="email" />
-
-        <div
-          *ngIf="
-            regForm.get('email')?.invalid &&
-            (regForm.get('email')?.touched || regForm.get('email')?.dirty)
-          "
-        >
-          <div *ngIf="regForm.get('email')?.errors?.['required']">
-            Email cant be empty
-          </div>
-
-          <div *ngIf="regForm.get('email')?.errors?.['emailDomain']">
-            Email must be 'hexaware.com'
-          </div>
-        </div>
-
-        Password:<input type="password" formControlName="pass" />&nbsp; State:
-        <select formControlName="state">
-          <option value="">--select state--</option>
-          <option *ngFor="let data of state" [value]="data">{{ data }}</option>
-        </select>
-
-        <button [disabled]="regForm.invalid" class="btn btn-primary">
-          Register
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <br />
-
-  <div>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>UserName</th>
-          <th>Email</th>
-          <th>State</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{user.uname}}</td>
-          <td>{{user.email}}</td>
-          <td>{{user.state}}</td>
-          <td><button (click)="deleteUser(user.id)" class="btn btn-danger">Delete</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
