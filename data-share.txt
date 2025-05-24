@@ -1,84 +1,30 @@
-import { Injectable } from '@angular/core';
-import { UserForm } from './models/UserForm.model';
-import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
-import { UserGuardService } from './user-guard.service';
-import { Router } from '@angular/router';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class UserService {
- 
-private baseURL='http://localhost:3000/users'
-  constructor(private http: HttpClient,private ug:UserGuardService,private route:Router) {}
-
-  addUserTODB(data: UserForm) {
-    this.http.post(this.baseURL, data).subscribe((res) => {
-      console.log(res);
-    });
-  }
-
-  loadUsersFromDB():Observable<any>{
-   return this.http.get(this.baseURL);
-   
-}
-deleteUserFromDB(id:string):Observable<any>{
- return this.http.delete(`${this.baseURL}/${id}`);
-}
-
-logout(){
-  this.ug.isAllowed=false
-this.route.navigateByUrl('/login')
-}
-
-loginUser(data:any):Observable<any>{
-const url=`${this.baseURL}?uname=${data.uname}&pass=${data.pass}`
-return this.http.get<any[]>(url).pipe(
-  map(users =>users.length ? users[0]:null)
-)
-}
-}
-
-
-------------
-
-
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { UserService } from '../../shared/user.service';
-import { Router } from '@angular/router';
-import { UserGuardService } from '../../shared/user-guard.service';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  selector: 'app-pipe',
+  templateUrl: './pipe.component.html',
+  styleUrl: './pipe.component.css'
 })
-export class LoginComponent {
+export class PipeComponent {
 
-  regForm: FormGroup;
-  constructor(private fb: FormBuilder, private us: UserService,private ug:UserGuardService,
-    private route:Router
-  ) {
-    this.regForm = this.fb.group({
-      uname: ['', [Validators.required]],
-      pass: ['', [Validators.required, Validators.minLength(6)]],
-
-    });}
-
-    login(){
-    this.us.loginUser(this.regForm.value).subscribe(user =>{
-      if(user){
-        alert('login successfull')
-        this.ug.isAllowed=true
-        this.route.navigateByUrl('/userdetails')
-
-
-      }else{
-        alert('UnAuthorized ....!')
-      }
-    })
-      
-    }
+  userdata={
+    uname:'administrator',
+    income:232323,
+    rating:4.7897,
+    joinDate: new Date('11/11/2011')
+  }
 }
+
+
+-------------
+
+
+
+<p>Pipe Demo</p>
+
+<ul>
+    <li>{{userdata.uname | uppercase}}</li>
+     <li>{{userdata.income | currency :'GBP'}}</li>
+      <li>{{userdata.rating }}</li>
+       <li>{{userdata.joinDate}}</li>
+</ul>
