@@ -1,76 +1,55 @@
-import { Component } from '@angular/core';
-import { CartService } from '../../shared/services/cart.service';
+const express = require("express");
+const bodyparser = require("body-parser");
+const jwt = require("jsonwebtoken");
+const cors = require("cors");
 
-@Component({
-  selector: 'app-cart',
-  templateUrl: './cart.component.html',
-  styleUrl: './cart.component.css'
-})
-export class CartComponent {
-  public products: any = []
-  public grandTotal !: number
-  constructor(private cs: CartService) {
-    this.cs.getProducts()
-      .subscribe(res => {
-        this.products = res
-        this.grandTotal = this.cs.getTotalPrice()
-      })
+const app = express();
+const PORT = 3000;
+const SECRET_KEY = "dsdsd00909";
+app.use(cors());
+app.use(bodyparser.json())
+
+// mocking the dummy users
+const users = [
+  { id: 1, username: "user1", password: "pass123" },
+  { id: 2, username: "user2", password: "pass1234" },
+];
+// create login endpoints
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  const user = users.find(
+    (u) => u.username === username && u.password === password
+  );
+  if (user) {
+    // create a token
+    const token = jwt.sign({ userId: user.id }, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+    res.json({
+      message: "Authentication Sucessfull",
+      token,
+    });
+  } else {
+    res.status(401).json({ message: "Invalid Credentials" });
   }
+});
+// access protected route
+app.get("/api/protected", authenticationUser, (req, res) => {
+  res.json({ message: "This is protected Data", user: req.user });
+});
 
+// middleware to intercept the incomming request
+function authenticationUser(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.sendStatus(401);
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req, (user = user);
+    next();
+  });
 }
-----
-
-
-<ng-container *ngIf="true">
-    <div class="card-table">
-        <div class="cart-product">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Sr.No</th>
-                        <th>Product Name</th>
-                        <th>Product Image</th>
-                        <th>Description</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Total</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of products; let i=index">
-                        <td>{{i+1}}</td>
-                        <td>{{item.title}}</td>
-                        <td>
-                            <img style="width: 120px;" src="{{item.image}}">
-                        </td>
-                        <td>{{item.description}}</td>
-                        <td>{{item.price}}</td>
-                        <td>{{item.quantity}}</td>
-                        <td>{{item.total}}</td>
-                        <td>
-                            <button class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</ng-container>
-
-
-
-
-<ng-container *ngIf="false">
-    <div class="container">
-        <div class="card">
-            <h5 class="card-title">My Cart</h5>
-
-        </div>
-        <div class="center">
-            <h4>Your Cart Is Empty</h4>
-            <h6>Add Item Now</h6>
-            <button class="btn btn-primary">Shop Now</button>
-        </div>
-    </div>
-</ng-container>
+app.listen(PORT, () => {
+  console.log("server is ready");
+});
