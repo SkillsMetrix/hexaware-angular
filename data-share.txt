@@ -1,59 +1,30 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
- import { Router } from '@angular/router';
- 
-@Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, tap } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
 })
-export class LoginComponent {
+export class LoginService {
+  API_URL = 'http://localhost:3000/api/login'
 
-  regForm: FormGroup;
-  constructor(private fb: FormBuilder,
-    private route:Router
-  ) {
-    this.regForm = this.fb.group({
-      uname: ['', [Validators.required]],
-      pass: ['', [Validators.required, Validators.minLength(6)]],
+  private loggedIn = new BehaviorSubject<boolean>(false)
 
-    });}
+  constructor(private http: HttpClient) { }
 
-    login(){
-   
-      
-    }
+  loginUser(userdata: any) {
+    console.log(userdata);
+    return this.http.post(this.API_URL, {userdata}).pipe(
+      tap((res: any) => {
+        if (res.token) {
+          console.log(res.token);
+          
+          localStorage.setItem('token', res.token)
+          this.loggedIn.next(true)
+        }
+      })
+    )
+  }
+
+
 }
-----
-<div class="container">
-  <div class="card">
-    <div class="card-header">
-      <p>User Login Form</p>
-    </div>
-    <div class="card-body">
-      <form (ngSubmit)="login()" [formGroup]="regForm">
-        UserName:
-        <input type="text" placeholder="Enter Name" formControlName="uname" />
-
-        <div
-          *ngIf="
-            regForm.get('uname')?.invalid &&
-            (regForm.get('uname')?.touched || regForm.get('uname')?.dirty)
-          "
-        >
-          <div *ngIf="regForm.get('uname')?.errors?.['required']">
-            Name cant be empty
-          </div>
-        </div>
-
-        Password:<input type="password" formControlName="pass" /> &nbsp;
-
-        <button [disabled]="regForm.invalid" class="btn btn-primary">
-          Login
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <br />
-</div>
