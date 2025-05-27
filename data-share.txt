@@ -1,75 +1,6 @@
-<div class="container">
-  <div class="card">
-    <div class="card-header">
-      <p>User Login Form</p>
-    </div>
-    <div class="card-body">
-      <form (ngSubmit)="login()" [formGroup]="regForm">
-        UserName:
-        <input type="text" placeholder="Enter Name" formControlName="username" />
-
-        <div
-          *ngIf="
-            regForm.get('username')?.invalid &&
-            (regForm.get('username')?.touched || regForm.get('username')?.dirty)
-          "
-        >
-          <div *ngIf="regForm.get('username')?.errors?.['required']">
-            Name cant be empty
-          </div>
-        </div>
-
-        password:<input type="password" formControlName="password" /> &nbsp;
-
-        <button [disabled]="regForm.invalid" class="btn btn-primary">
-          Login
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <br />
-</div>
-----
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
- import { Router } from '@angular/router';
-import { LoginService } from '../../shared/login.service';
- 
-@Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
-})
-export class LoginComponent {
-
-  regForm: FormGroup;
-  constructor(private fb: FormBuilder,
-    private route:Router,private ls:LoginService
-  ) {
-    this.regForm = this.fb.group({
-      username: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-
-    });}
-
-    login(){
-   this.ls.loginUser(this.regForm.value).subscribe({
-    next:() => this.route.navigate(["/protected"])
-   })
-   
-      
-    }
-}
-
-
-
-------------
-
-
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -79,21 +10,34 @@ export class LoginService {
 
   private loggedIn = new BehaviorSubject<boolean>(false)
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.checkToken()
+  }
 
   loginUser(userdata: any) {
     console.log(userdata);
-    return this.http.post(this.API_URL,userdata).pipe(
+    return this.http.post(this.API_URL, userdata).pipe(
       tap((res: any) => {
         if (res.token) {
           console.log(res.token);
-          
+
           localStorage.setItem('token', res.token)
           this.loggedIn.next(true)
         }
       })
     )
   }
-
-
+  getToken() {
+    return localStorage.getItem('token')
+  }
+  isLoggedIn(): Observable<boolean> {
+    return this.loggedIn.asObservable()
+  }
+  private checkToken() {
+    const token = this.getToken()
+    this.loggedIn.next(!!token)
+  }
+  getProtectedData(): Observable<any> {
+    return this.http.get('http://localhost:3000/api/protected')
+  }
 }
