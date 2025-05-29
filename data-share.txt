@@ -1,14 +1,31 @@
+import { Component } from '@angular/core';
 
-<ul *ngIf="users.length >0;else noUsers">
-    <li *ngFor="let user of users">{{user.name}}</li>
-</ul>
-<ng-template #noUsers>
-    <p>No Users Found</p>
-</ng-template>
+@Component({
+  selector: 'app-mycomp',
+  templateUrl: './mycomp.component.html',
+  styleUrl: './mycomp.component.css'
+})
+export class MycompComponent {
+  username='admin'
+  users:{name:string}[]=[]
+
+}
 
 ---
 
 
+
+<div id="user-container">
+<ul *ngIf="users.length >0;else noUsers">
+    <li *ngFor="let user of users">{{user.name}}</li>
+</ul>
+</div>
+<ng-template #noUsers>
+    <p>No Users Found</p>
+</ng-template>
+
+
+-------
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -42,7 +59,8 @@ describe('MycompComponent', () => {
       {name:'admin'},{name:'tom'}
     ]
     fixture.detectChanges()
-    const listItems=fixture.nativeElement.querySelectorAll('li')
+    const container= fixture.nativeElement.querySelector('#user-container')
+    const listItems=container.querySelectorAll('li')
     expect(listItems.length).toBe(2)
     expect(listItems[0].textContent).toContain('admin')
     expect(listItems[1].textContent).toContain('tom')
